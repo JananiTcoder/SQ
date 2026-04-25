@@ -1,0 +1,42 @@
+﻿
+> react-vite-tailwind@0.0.0 build
+> vite build
+
+[36mvite v7.2.4 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 3 modules transformed.
+node.exe : [31mΓ£ù[39m Build failed in 59ms
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31mΓ£ù[39m Build failed in 59ms:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31merror during build:
+[31m[vite:esbuild] Transform failed with 1 error:
+C:/Users/swath/Downloads/sanitiq-frontend-blueprint (2)/src/App.tsx:1956:9: ERROR: The symbol "WorkerTokenPage" has 
+already been declared[31m
+file: [36mC:/Users/swath/Downloads/sanitiq-frontend-blueprint (2)/src/App.tsx:1956:9[31m
+[33m
+[33mThe symbol "WorkerTokenPage" has already been declared[33m
+1954 |  }
+1955 |  
+1956 |  function WorkerTokenPage() {
+     |           ^
+1957 |    const [claimed, setClaimed] = useState<string[]>([]);
+1958 |  
+[31m
+    at failureErrorWithLog (C:\Users\swath\Downloads\sanitiq-frontend-blueprint 
+(2)\node_modules\esbuild\lib\main.js:1467:15)
+    at C:\Users\swath\Downloads\sanitiq-frontend-blueprint (2)\node_modules\esbuild\lib\main.js:736:50
+    at responseCallbacks.<computed> (C:\Users\swath\Downloads\sanitiq-frontend-blueprint 
+(2)\node_modules\esbuild\lib\main.js:603:9)
+    at handleIncomingPacket (C:\Users\swath\Downloads\sanitiq-frontend-blueprint 
+(2)\node_modules\esbuild\lib\main.js:658:12)
+    at Socket.readFromStdout (C:\Users\swath\Downloads\sanitiq-frontend-blueprint 
+(2)\node_modules\esbuild\lib\main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)[39m
