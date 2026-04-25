@@ -1978,7 +1978,6 @@ function WorkerTokenPage() {
 
   const currentHour = new Date().getHours();
   // Day shift is 08:00 AM to 04:00 PM
-  const isDayShiftActive = currentHour >= 8 && currentHour < 16;
   // Night shift is 08:00 PM to 04:00 AM
   const isNightShiftActive = currentHour >= 20 || currentHour < 4;
 
@@ -2003,10 +2002,10 @@ function WorkerTokenPage() {
                   </div>
                   <button 
                     onClick={() => handleClaim(id)}
-                    disabled={isClaimed || !isDayShiftActive}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : !isDayShiftActive ? 'bg-white/5 text-slate-500 cursor-not-allowed' : 'bg-amber-400 text-amber-950 hover:bg-amber-300'}`}
-                  >
-                    {isClaimed ? "Claimed" : !isDayShiftActive ? "Not Active" : "Claim the token"}
+                    disabled={isClaimed}
+className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : 'bg-amber-400 text-amber-950 hover:bg-amber-300'}`}
+>
+{isClaimed ? "Claimed" : "Claim token"}
                   </button>
                 </div>
               );
