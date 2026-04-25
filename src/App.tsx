@@ -1904,8 +1904,6 @@ function WorkerTokenPage() {
     }
   };
 
-  const dayTokens = [1, 2];
-  const nightTokens = [1, 2, 3, 4, 5];
 
   return (
     <div className="space-y-6">
@@ -1968,14 +1966,6 @@ function WorkerTokenPage() {
     </div>
   );
 }
-
-  const dayTokens = [1, 2];
-  const nightTokens = [1, 2, 3, 4, 5];
-
-  const currentHour = new Date().getHours();
-  // Day shift is 08:00 AM to 04:00 PM
-  // Night shift is 08:00 PM to 04:00 AM
-  const isNightShiftActive = currentHour >= 20 || currentHour < 4;
 
   return (
     <div className="space-y-6">
