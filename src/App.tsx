@@ -1904,7 +1904,8 @@ function WorkerTokenPage() {
     }
   };
 
-
+  const dayTokens = [1, 2];
+  const nightTokens = [1, 2, 3, 4, 5];
   return (
     <div className="space-y-6">
       <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
