@@ -1879,10 +1879,19 @@ function markerIcon(cleanliness: Cleanliness) {
 }
 
 function WorkerTokenPage() {
-  const [claimed, setClaimed] = useState<string[]>([]);
+  const [claimed, setClaimed] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sanitiq:claimed-tokens") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
 
   const handleClaim = async (id: string) => {
     if (!claimed.includes(id)) {
+      const next = [...claimed, id];
+      setClaimed(next);
+      localStorage.setItem("sanitiq:claimed-tokens", JSON.stringify(next));
       try {
         await fetch("/api/update-motor", {
           method: "POST",
@@ -1892,9 +1901,77 @@ function WorkerTokenPage() {
       } catch (error) {
         console.error("Failed to update motor time:", error);
       }
-      setClaimed((prev) => [...prev, id]);
     }
   };
+
+  const dayTokens = [1, 2];
+  const nightTokens = [1, 2, 3, 4, 5];
+
+  const currentHour = new Date().getHours();
+  const isNightShiftActive = currentHour >= 20 || currentHour < 4;
+
+  return (
+    <div className="space-y-6">
+      <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <Panel title="Day Shift Tokens" action="2 available">
+          <div className="space-y-3">
+            {dayTokens.map((num) => {
+              const id = `day-${num}`;
+              const isClaimed = claimed.includes(id);
+              return (
+                <div key={id} className="flex items-center justify-between rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-amber-400/20 p-2 text-amber-300"><TicketCheck size={20} /></div>
+                    <div>
+                      <p className="font-bold text-white">Day Token #{num}</p>
+                      <p className="text-sm text-slate-400">Shift: 08:00 AM - 04:00 PM</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleClaim(id)}
+                    disabled={isClaimed}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : 'bg-amber-400 text-amber-950 hover:bg-amber-300'}`}
+                  >
+                    {isClaimed ? "Claimed" : "Claim token"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+
+        <Panel title="Night Shift Tokens" action="5 available">
+          <div className="space-y-3">
+            {nightTokens.map((num) => {
+              const id = `night-${num}`;
+              const isClaimed = claimed.includes(id);
+              return (
+                <div key={id} className="flex items-center justify-between rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-cyan-400/20 p-2 text-cyan-300"><TicketCheck size={20} /></div>
+                    <div>
+                      <p className="font-bold text-white">Night Token #{num}</p>
+                      <p className="text-sm text-slate-400">Shift: 08:00 PM - 04:00 AM</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleClaim(id)}
+                    disabled={isClaimed || !isNightShiftActive}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : !isNightShiftActive ? 'bg-white/5 text-slate-500 cursor-not-allowed' : 'bg-cyan-400 text-cyan-950 hover:bg-cyan-300'}`}
+                  >
+                    {isClaimed ? "Claimed" : !isNightShiftActive ? "Not Active" : "Claim token"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
 
   const dayTokens = [1, 2];
   const nightTokens = [1, 2, 3, 4, 5];
