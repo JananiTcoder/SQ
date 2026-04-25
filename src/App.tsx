@@ -1907,13 +1907,9 @@ function WorkerTokenPage() {
   const dayTokens = [1, 2];
   const nightTokens = [1, 2, 3, 4, 5];
 
-  const currentHour = new Date().getHours();
-  const isNightShiftActive = currentHour >= 20 || currentHour < 4;
-
   return (
     <div className="space-y-6">
       <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
-      
       <div className="grid gap-6 md:grid-cols-2">
         <Panel title="Day Shift Tokens" action="2 available">
           <div className="space-y-3">
@@ -1929,10 +1925,10 @@ function WorkerTokenPage() {
                       <p className="text-sm text-slate-400">Shift: 08:00 AM - 04:00 PM</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleClaim(id)}
+                  <button
+                    onClick={() => void handleClaim(id)}
                     disabled={isClaimed}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : 'bg-amber-400 text-amber-950 hover:bg-amber-300'}`}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? "bg-white/10 text-slate-400 cursor-not-allowed" : "bg-amber-400 text-amber-950 hover:bg-amber-300"}`}
                   >
                     {isClaimed ? "Claimed" : "Claim token"}
                   </button>
@@ -1956,12 +1952,12 @@ function WorkerTokenPage() {
                       <p className="text-sm text-slate-400">Shift: 08:00 PM - 04:00 AM</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleClaim(id)}
-                    disabled={isClaimed || !isNightShiftActive}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? 'bg-white/10 text-slate-400 cursor-not-allowed' : !isNightShiftActive ? 'bg-white/5 text-slate-500 cursor-not-allowed' : 'bg-cyan-400 text-cyan-950 hover:bg-cyan-300'}`}
+                  <button
+                    onClick={() => void handleClaim(id)}
+                    disabled={isClaimed}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? "bg-white/10 text-slate-400 cursor-not-allowed" : "bg-cyan-400 text-cyan-950 hover:bg-cyan-300"}`}
                   >
-                    {isClaimed ? "Claimed" : !isNightShiftActive ? "Not Active" : "Claim token"}
+                    {isClaimed ? "Claimed" : "Claim token"}
                   </button>
                 </div>
               );
