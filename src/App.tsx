@@ -1905,7 +1905,13 @@ function WorkerTokenPage() {
   };
 
   const dayTokens = [1, 2];
-  const nightTokens = [1, 2, 3, 4, 5];
+const nightTokens = [1, 2, 3, 4, 5];
+
+const now = new Date();
+const hour = now.getHours();
+
+const isDayShiftActive = hour >= 8 && hour < 16;     // 8 AM to 4 PM
+const isNightShiftActive = hour >= 20 || hour < 4;   // 8 PM to 4 AM
   return (
     <div className="space-y-6">
       <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
@@ -1925,12 +1931,18 @@ function WorkerTokenPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => void handleClaim(id)}
-                    disabled={isClaimed}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? "bg-white/10 text-slate-400 cursor-not-allowed" : "bg-amber-400 text-amber-950 hover:bg-amber-300"}`}
-                  >
-                    {isClaimed ? "Claimed" : "Claim token"}
-                  </button>
+  onClick={() => void handleClaim(id)}
+  disabled={isClaimed || !isDayShiftActive}
+  className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+    isClaimed
+      ? "bg-white/10 text-slate-400 cursor-not-allowed"
+      : !isDayShiftActive
+      ? "bg-white/5 text-slate-500 cursor-not-allowed"
+      : "bg-amber-400 text-amber-950 hover:bg-amber-300"
+  }`}
+>
+  {isClaimed ? "Claimed" : !isDayShiftActive ? "Not Active" : "Claim token"}
+</button>
                 </div>
               );
             })}
