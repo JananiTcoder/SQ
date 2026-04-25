@@ -1906,12 +1906,6 @@ function WorkerTokenPage() {
 
   const dayTokens = [1, 2];
 const nightTokens = [1, 2, 3, 4, 5];
-
-const now = new Date();
-const hour = now.getHours();
-
-const isDayShiftActive = hour >= 8 && hour < 16;     // 8 AM to 4 PM
-const isNightShiftActive = hour >= 20 || hour < 4;   // 8 PM to 4 AM
   return (
     <div className="space-y-6">
       <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
@@ -1932,38 +1926,15 @@ const isNightShiftActive = hour >= 20 || hour < 4;   // 8 PM to 4 AM
                   </div>
                   <button
   onClick={() => void handleClaim(id)}
-  disabled={isClaimed || !isDayShiftActive}
+  disabled={isClaimed}
   className={`rounded-full px-4 py-2 text-sm font-bold transition ${
     isClaimed
       ? "bg-white/10 text-slate-400 cursor-not-allowed"
-      : !isDayShiftActive
-      ? "bg-white/5 text-slate-500 cursor-not-allowed"
       : "bg-amber-400 text-amber-950 hover:bg-amber-300"
   }`}
 >
-  {isClaimed ? "Claimed" : !isDayShiftActive ? "Not Active" : "Claim token"}
+  {isClaimed ? "Claimed" : "Claim token"}
 </button>
-                </div>
-              );
-            })}
-          </div>
-        </Panel>
-
-        <Panel title="Night Shift Tokens" action="5 available">
-          <div className="space-y-3">
-            {nightTokens.map((num) => {
-              const id = `night-${num}`;
-              const isClaimed = claimed.includes(id);
-              return (
-                <div key={id} className="flex items-center justify-between rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-cyan-400/20 p-2 text-cyan-300"><TicketCheck size={20} /></div>
-                    <div>
-                      <p className="font-bold text-white">Night Token #{num}</p>
-                      <p className="text-sm text-slate-400">Shift: 08:00 PM - 04:00 AM</p>
-                    </div>
-                  </div>
-                  <button
                     onClick={() => void handleClaim(id)}
                     disabled={isClaimed}
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? "bg-white/10 text-slate-400 cursor-not-allowed" : "bg-cyan-400 text-cyan-950 hover:bg-cyan-300"}`}
