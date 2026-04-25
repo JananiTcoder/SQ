@@ -1888,93 +1888,103 @@ function WorkerTokenPage() {
   });
 
   const handleClaim = async (id: string) => {
-    if (!claimed.includes(id)) {
-      const next = [...claimed, id];
-      setClaimed(next);
-      localStorage.setItem("sanitiq:claimed-tokens", JSON.stringify(next));
-      try {
-        await fetch("/api/update-motor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ motor_time: 30, call: 0 })
-        });
-      } catch (error) {
-        console.error("Failed to update motor time:", error);
-      }
+    if (claimed.includes(id)) return;
+
+    const next = [...claimed, id];
+    setClaimed(next);
+    localStorage.setItem("sanitiq:claimed-tokens", JSON.stringify(next));
+
+    try {
+      await fetch("/api/update-motor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          motor_time: 30,
+          call: 0
+        })
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
   const dayTokens = [1, 2];
-const nightTokens = [1, 2, 3, 4, 5];
+  const nightTokens = [1, 2, 3, 4, 5];
+
   return (
     <div className="space-y-6">
-      <CommandHeader title="Worker Tokens" subtitle="Claim your assigned cleaning tokens for the day and night shifts." isLive lastSync={new Date()} />
+      <CommandHeader
+        title="Worker Tokens"
+        subtitle="Claim tokens"
+        isLive={true}
+        lastSync={new Date()}
+      />
+
       <div className="grid gap-6 md:grid-cols-2">
+
+        {/* DAY */}
         <Panel title="Day Shift Tokens" action="2 available">
           <div className="space-y-3">
             {dayTokens.map((num) => {
               const id = `day-${num}`;
               const isClaimed = claimed.includes(id);
+
               return (
-                <div key={id} className="flex items-center justify-between rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-amber-400/20 p-2 text-amber-300"><TicketCheck size={20} /></div>
-                    <div>
-                      <p className="font-bold text-white">Day Token #{num}</p>
-                      <p className="text-sm text-slate-400">Shift: 08:00 AM - 04:00 PM</p>
-                    </div>
-                  </div>
+                <div key={id} className="flex justify-between rounded-2xl p-4 bg-amber-400/10">
+                  <p className="text-white font-bold">
+                    Day Token #{num}
+                  </p>
+
                   <button
-  onClick={() => void handleClaim(id)}
-  disabled={isClaimed}
-  className={`rounded-full px-4 py-2 text-sm font-bold transition ${
-    isClaimed
-      ? "bg-white/10 text-slate-400 cursor-not-allowed"
-      : "bg-amber-400 text-amber-950 hover:bg-amber-300"
-  }`}
->
-  {isClaimed ? "Claimed" : "Claim token"}
-</button>
-                    onClick={() => void handleClaim(id)}
+                    onClick={() => handleClaim(id)}
                     disabled={isClaimed}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${isClaimed ? "bg-white/10 text-slate-400 cursor-not-allowed" : "bg-cyan-400 text-cyan-950 hover:bg-cyan-300"}`}
+                    className={`rounded-full px-4 py-2 font-bold ${
+                      isClaimed
+                        ? "bg-gray-500 text-white"
+                        : "bg-amber-400 text-black"
+                    }`}
                   >
-                    {isClaimed ? "Claimed" : "Claim token"}
+                    {isClaimed ? "Claimed" : "Claim Token"}
                   </button>
                 </div>
               );
             })}
           </div>
         </Panel>
+
+        {/* NIGHT */}
+        <Panel title="Night Shift Tokens" action="5 available">
+          <div className="space-y-3">
+            {nightTokens.map((num) => {
+              const id = `night-${num}`;
+              const isClaimed = claimed.includes(id);
+
+              return (
+                <div key={id} className="flex justify-between rounded-2xl p-4 bg-cyan-400/10">
+                  <p className="text-white font-bold">
+                    Night Token #{num}
+                  </p>
+
+                  <button
+                    onClick={() => handleClaim(id)}
+                    disabled={isClaimed}
+                    className={`rounded-full px-4 py-2 font-bold ${
+                      isClaimed
+                        ? "bg-gray-500 text-white"
+                        : "bg-cyan-400 text-black"
+                    }`}
+                  >
+                    {isClaimed ? "Claimed" : "Claim Token"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+
       </div>
     </div>
-  );
-}
-
-export default function App() {
-  const data = useSanitiQData();
-
-  return (
-    <BrowserRouter>
-      <AppShell isLive={data.isLive} lastSync={data.lastSync}>
-        <Routes>
-          <Route path="/" element={<HomePage summary={data.summary} toilets={data.toilets} />} />
-          <Route path="/public" element={<PublicPortalPage summary={data.summary} toilets={data.toilets} wardRisk={data.wardRisk} />} />
-          <Route path="/dashboard" element={<DashboardPage summary={data.summary} toilets={data.toilets} complaints={data.complaints} wardRisk={data.wardRisk} isLive={data.isLive} lastSync={data.lastSync} />} />
-          <Route path="/staff/complaints" element={<StaffComplaintsPage complaints={data.complaints} onStatus={data.updateComplaintStatus} />} />
-          <Route path="/toilets" element={<ToiletsPage toilets={data.toilets} />} />
-          <Route path="/sensors" element={<SensorsPage toilets={data.toilets} />} />
-          <Route path="/map" element={<MapPage toilets={data.toilets} />} />
-          <Route path="/workers" element={<WorkersPage />} />
-          <Route path="/outbreak" element={<AnalyticsPage wardRisk={data.wardRisk} toilets={data.toilets} complaints={data.complaints} />} />
-          <Route path="/reports" element={<ReportsPage summary={data.summary} />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/complaints" element={<ComplaintsPage toilets={data.toilets} onAdd={data.addComplaint} />} />
-          <Route path="/tokens" element={<WorkerTokenPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AppShell>
-    </BrowserRouter>
   );
 }
