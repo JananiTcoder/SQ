@@ -1917,21 +1917,15 @@ function WorkerTokenPage() {
     const content = JSON.stringify({ motor_time: 30 }, null, 2);
     try {
       // @ts-ignore
-      const [fileHandle] = await window.showOpenFilePicker({
+      const [fileHandle] = await window.showSaveFilePicker({
+        suggestedName: "json.json",
         types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
-        startIn: "downloads",
       });
       const writable = await fileHandle.createWritable();
       await writable.write(content);
       await writable.close();
     } catch {
-      // user cancelled picker — fallback to download
-      const blob = new Blob([content], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "json.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
+      // cancelled — silent
     }
   };
 
