@@ -1904,54 +1904,68 @@ function markerIcon(cleanliness: Cleanliness) {
   });
 }
 function WorkerTokenPage() {
-  const [activeToken, setActiveToken] = useState<number | null>(null);
-
-  // Load saved token (optional but useful)
-  useEffect(() => {
-    const saved = localStorage.getItem("activeToken");
-    if (saved) setActiveToken(Number(saved));
-  }, []);
-
-  // Save token
-  useEffect(() => {
-    if (activeToken !== null) {
-      localStorage.setItem("activeToken", activeToken.toString());
+  // Initialize state directly from localStorage to prevent flickering
+  const [activeToken, setActiveToken] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem("activeToken");
+      return saved ? Number(saved) : null;
+    } catch {
+      return null;
     }
-  }, [activeToken]);
+  });
 
+  // Handle click and save to localStorage safely
   const handleTokenClick = (id: number) => {
     setActiveToken(id);
+    try {
+      localStorage.setItem("activeToken", id.toString());
+    } catch {
+      // Ignore if localStorage is blocked
+    }
   };
 
   return (
     <div className="space-y-6">
       
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Day Shift Tokens</h1>
-        <p className="text-slate-400 text-sm">
-          Select your working shift token. Only one can be active.
-        </p>
+      <div className="flex items-start justify-between sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Day Shift Tokens</h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Select your working shift token. Only one can be active.
+          </p>
+        </div>
+        <div className="shrink-0 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-slate-300">
+          2 available
+        </div>
       </div>
 
       {/* Tokens */}
       <div className="space-y-4">
 
         {/* TOKEN 1 */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 flex justify-between items-center">
-          <div>
-            <p className="font-bold text-white">Day Token #1</p>
-            <p className="text-sm text-slate-400">
-              Shift: 08:00 AM - 04:00 PM
-            </p>
+        <div className={`flex flex-col gap-4 rounded-[1.5rem] border p-5 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+          activeToken === 1 ? "border-amber-500/50 bg-amber-500/10" : "border-white/10 bg-white/[0.04]"
+        }`}>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+              <TicketCheck size={24} />
+            </div>
+            <div>
+              <p className="font-bold text-white">Day Token #1</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Shift: 08:00 AM - 04:00 PM
+              </p>
+            </div>
           </div>
 
           <button
+            type="button"
             onClick={() => handleTokenClick(1)}
-            className={`px-5 py-2 rounded-xl font-semibold transition ${
+            className={`w-full shrink-0 rounded-xl px-6 py-2.5 font-semibold transition sm:w-auto ${
               activeToken === 1
-                ? "bg-green-500 text-white"
-                : "bg-white/10 text-slate-300"
+                ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
+                : "bg-white/10 text-slate-300 hover:bg-white/20"
             }`}
           >
             {activeToken === 1 ? "Active" : "Not Active"}
@@ -1959,20 +1973,28 @@ function WorkerTokenPage() {
         </div>
 
         {/* TOKEN 2 */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 flex justify-between items-center">
-          <div>
-            <p className="font-bold text-white">Day Token #2</p>
-            <p className="text-sm text-slate-400">
-              Shift: 08:00 AM - 04:00 PM
-            </p>
+        <div className={`flex flex-col gap-4 rounded-[1.5rem] border p-5 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+          activeToken === 2 ? "border-amber-500/50 bg-amber-500/10" : "border-white/10 bg-white/[0.04]"
+        }`}>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+              <TicketCheck size={24} />
+            </div>
+            <div>
+              <p className="font-bold text-white">Day Token #2</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Shift: 08:00 AM - 04:00 PM
+              </p>
+            </div>
           </div>
 
           <button
+            type="button"
             onClick={() => handleTokenClick(2)}
-            className={`px-5 py-2 rounded-xl font-semibold transition ${
+            className={`w-full shrink-0 rounded-xl px-6 py-2.5 font-semibold transition sm:w-auto ${
               activeToken === 2
-                ? "bg-green-500 text-white"
-                : "bg-white/10 text-slate-300"
+                ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
+                : "bg-white/10 text-slate-300 hover:bg-white/20"
             }`}
           >
             {activeToken === 2 ? "Active" : "Not Active"}
@@ -1983,3 +2005,4 @@ function WorkerTokenPage() {
     </div>
   );
 }
+
