@@ -1879,31 +1879,28 @@ function markerIcon(cleanliness: Cleanliness) {
 }
 
 function WorkerTokenPage() {
-  const [claimed, setClaimed] = useState<string[]>(() => {
+  const [activeTokens, setActiveTokens] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("sanitiq:claimed-tokens") ?? "[]");
+      return JSON.parse(localStorage.getItem("sanitiq:active-tokens") ?? "[]");
     } catch {
       return [];
     }
   });
 
-  const handleClaim = async (id: string) => {
-    if (claimed.includes(id)) return;
+  const handleToggle = async (id: string) => {
+    const isActive = activeTokens.includes(id);
+    const next = isActive
+      ? activeTokens.filter((t) => t !== id)
+      : [...activeTokens, id];
 
-    const next = [...claimed, id];
-    setClaimed(next);
-    localStorage.setItem("sanitiq:claimed-tokens", JSON.stringify(next));
+    setActiveTokens(next);
+    localStorage.setItem("sanitiq:active-tokens", JSON.stringify(next));
 
     try {
       await fetch("/api/update-motor", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          motor_time: 30,
-          call: 0
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motor_time: 30, call: isActive ? 0 : 1 }),
       });
     } catch (err) {
       console.log(err);
@@ -1913,77 +1910,69 @@ function WorkerTokenPage() {
   const dayTokens = [1, 2];
   const nightTokens = [1, 2, 3, 4, 5];
 
+  const renderTokens = (
+    tokens: number[],
+    prefix: string,
+    bgColor: string,
+    activeColor: string,
+    shiftLabel: string,
+  ) =>
+    tokens.map((num) => {
+      const id = `${prefix}-${num}`;
+      const isActive = activeTokens.includes(id);
+
+      return (
+        <div
+          key={id}
+          className={`flex items-center justify-between rounded-2xl p-4 transition-colors ${bgColor}`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
+              <TicketCheck size={20} />
+            </div>
+            <div>
+              <p className="font-bold text-white">
+                {prefix.charAt(0).toUpperCase() + prefix.slice(1)} Token #{num}
+              </p>
+              <p className="text-xs text-slate-400">Shift: {shiftLabel}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => void handleToggle(id)}
+            className={`rounded-full px-5 py-2 text-sm font-bold transition-all ${
+              isActive
+                ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-950/30"
+                : "border border-white/20 bg-white/10 text-slate-300 hover:bg-white/20"
+            }`}
+          >
+            {isActive ? "Active" : "Not Active"}
+          </button>
+        </div>
+      );
+    });
+
   return (
     <div className="space-y-6">
       <CommandHeader
         title="Worker Tokens"
-        subtitle="Claim tokens"
+        subtitle="Activate or deactivate your shift tokens."
         isLive={true}
         lastSync={new Date()}
       />
 
       <div className="grid gap-6 md:grid-cols-2">
-
-        {/* DAY */}
         <Panel title="Day Shift Tokens" action="2 available">
           <div className="space-y-3">
-            {dayTokens.map((num) => {
-              const id = `day-${num}`;
-              const isClaimed = claimed.includes(id);
-
-              return (
-                <div key={id} className="flex justify-between rounded-2xl p-4 bg-amber-400/10">
-                  <p className="text-white font-bold">
-                    Day Token #{num}
-                  </p>
-
-                  <button
-                    onClick={() => handleClaim(id)}
-                    disabled={isClaimed}
-                    className={`rounded-full px-4 py-2 font-bold ${
-                      isClaimed
-                        ? "bg-gray-500 text-white"
-                        : "bg-amber-400 text-black"
-                    }`}
-                  >
-                    {isClaimed ? "Claimed" : "Claim Token"}
-                  </button>
-                </div>
-              );
-            })}
+            {renderTokens(dayTokens, "day", "bg-amber-400/10", "bg-amber-400", "08:00 AM - 04:00 PM")}
           </div>
         </Panel>
 
-        {/* NIGHT */}
         <Panel title="Night Shift Tokens" action="5 available">
           <div className="space-y-3">
-            {nightTokens.map((num) => {
-              const id = `night-${num}`;
-              const isClaimed = claimed.includes(id);
-
-              return (
-                <div key={id} className="flex justify-between rounded-2xl p-4 bg-cyan-400/10">
-                  <p className="text-white font-bold">
-                    Night Token #{num}
-                  </p>
-
-                  <button
-                    onClick={() => handleClaim(id)}
-                    disabled={isClaimed}
-                    className={`rounded-full px-4 py-2 font-bold ${
-                      isClaimed
-                        ? "bg-gray-500 text-white"
-                        : "bg-cyan-400 text-black"
-                    }`}
-                  >
-                    {isClaimed ? "Claimed" : "Claim Token"}
-                  </button>
-                </div>
-              );
-            })}
+            {renderTokens(nightTokens, "night", "bg-cyan-400/10", "bg-cyan-400", "08:00 PM - 04:00 AM")}
           </div>
         </Panel>
-
       </div>
     </div>
   );
