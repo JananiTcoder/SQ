@@ -736,7 +736,7 @@ function AdminControlsPanel() {
   );
 }
 
-function QrComplaintIntake({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (payload: Omit<Complaint, "id" | "createdAt" | "status">) => Promise<void> }) {
+function QrComplaintIntake({ toilets, onAdd, onScanComplete }: { toilets: Restroom[]; onAdd: (payload: Omit<Complaint, "id" | "createdAt" | "status">) => Promise<void>; onScanComplete?: () => void }) {
   const scannerElementId = "sanitiq-complaint-qr-reader";
   const [selectedId, setSelectedId] = useState(toilets[0]?.id ?? "");
   const [manualCode, setManualCode] = useState("");
@@ -800,6 +800,7 @@ function QrComplaintIntake({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (pa
     if (resolvedId) setSelectedId(resolvedId);
     setScannedCode(trimmed);
     setScanComplete(true);
+    onScanComplete?.();
     setRiskPrediction(fallbackRiskPrediction(matchedToilet));
     setScanMessage(resolvedId ? `QR scanned and matched ${resolvedId}. Public readings and complaint box opened.` : "QR scanned. Public readings and complaint box opened.");
     if (resolvedId) {
@@ -1007,7 +1008,7 @@ function ComplaintsPage({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (paylo
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4">
       <CommandHeader title="Public QR Complaint Intake" subtitle="Public users scan a restroom QR first, then SanitizeAI opens live-style readings, feedbacks, ratings, complaints, and AI risk prediction." isLive lastSync={new Date()} />
-      <QrComplaintIntake toilets={toilets} onAdd={onAdd} />
+      <QrComplaintIntake toilets={toilets} onAdd={onAdd} onScanComplete={() => setQrScanned(true)} />
     </div>
   );
 }
@@ -1057,6 +1058,7 @@ function RiskPredictionPanel({ prediction }: { prediction: RiskPrediction }) {
 function StaffComplaintsPage({ complaints, onStatus }: { complaints: Complaint[]; onStatus: (id: string, status: ComplaintStatus) => Promise<void> }) {
   const navigate = useNavigate();
   const [session, setSession] = useState<StaffSession | null>(() => getStaffSession());
+  const [qrScanned, setQrScanned] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | "All">("All");
   const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
   const [assignments, setAssignments] = useState<Record<string, string>>(() => Object.fromEntries(complaints.map((complaint) => [complaint.id, complaint.assignedTo ?? "Unassigned"])));
