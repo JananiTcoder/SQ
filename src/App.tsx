@@ -1904,7 +1904,7 @@ function markerIcon(cleanliness: Cleanliness) {
   });
 }
 function WorkerTokenPage() {
-  const [activeToken, setActiveToken] = useState<number | null>(null);
+  const [claimedTokens, setClaimedTokens] = useState<number[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("activeToken");
