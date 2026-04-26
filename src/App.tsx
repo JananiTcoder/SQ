@@ -1901,7 +1901,6 @@ function markerIcon(cleanliness: Cleanliness) {
     iconAnchor: [14, 14],
   });
 }
-
 function WorkerTokenPage() {
   const [activeTokens, setActiveTokens] = useState<string[]>(() => {
     try {
@@ -1934,67 +1933,94 @@ function WorkerTokenPage() {
   const dayTokens = [1, 2];
   const nightTokens = [1, 2, 3, 4, 5];
 
-  const renderTokens = (
-    tokens: number[],
-    prefix: string,
-    bgColor: string,
-    activeColor: string,
-    shiftLabel: string,
-  ) =>
-    tokens.map((num) => {
-      const id = `${prefix}-${num}`;
-      const isActive = activeTokens.includes(id);
-
-      return (
-        <div
-          key={id}
-          className={`flex items-center justify-between rounded-2xl p-4 transition-colors ${bgColor}`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
-              <TicketCheck size={20} />
-            </div>
-            <div>
-              <p className="font-bold text-white">
-                {prefix.charAt(0).toUpperCase() + prefix.slice(1)} Token #{num}
-              </p>
-              <p className="text-xs text-slate-400">Shift: {shiftLabel}</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => void handleToggle(id)}
-            className={`rounded-full px-5 py-2 text-sm font-bold transition-all ${
-              isActive
-                ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-950/30"
-                : "border border-white/20 bg-white/10 text-slate-300 hover:bg-white/20"
-            }`}
+  const TokenRow = ({
+    id,
+    label,
+    shift,
+    iconBg,
+    iconColor,
+    rowBg,
+  }: {
+    id: string;
+    label: string;
+    shift: string;
+    iconBg: string;
+    iconColor: string;
+    rowBg: string;
+  }) => {
+    const isActive = activeTokens.includes(id);
+    return (
+      <div
+        className={`flex items-center justify-between rounded-2xl p-4 ${rowBg}`}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}
           >
-            {isActive ? "Active" : "Not Active"}
-          </button>
+            <TicketCheck size={20} className={iconColor} />
+          </div>
+          <div>
+            <p className="font-bold text-white">{label}</p>
+            <p className="text-xs text-slate-400">Shift: {shift}</p>
+          </div>
         </div>
-      );
-    });
+
+        <button
+          type="button"
+          onClick={() => void handleToggle(id)}
+          className={`cursor-pointer rounded-full px-5 py-2 text-sm font-bold transition-all duration-200 ${
+            isActive
+              ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-950/40"
+              : "border border-white/20 bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"
+          }`}
+        >
+          {isActive ? "✓ Active" : "Not Active"}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
       <CommandHeader
         title="Worker Tokens"
-        subtitle="Activate or deactivate your shift tokens."
+        subtitle="Claim your assigned cleaning tokens for the day and night shifts."
         isLive={true}
         lastSync={new Date()}
       />
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* DAY SHIFT */}
         <Panel title="Day Shift Tokens" action="2 available">
           <div className="space-y-3">
-            {renderTokens(dayTokens, "day", "bg-amber-400/10", "bg-amber-400", "08:00 AM - 04:00 PM")}
+            {dayTokens.map((num) => (
+              <TokenRow
+                key={`day-${num}`}
+                id={`day-${num}`}
+                label={`Day Token #${num}`}
+                shift="08:00 AM - 04:00 PM"
+                iconBg="bg-amber-400/20"
+                iconColor="text-amber-300"
+                rowBg="bg-amber-400/10"
+              />
+            ))}
           </div>
         </Panel>
 
+        {/* NIGHT SHIFT */}
         <Panel title="Night Shift Tokens" action="5 available">
           <div className="space-y-3">
-            {renderTokens(nightTokens, "night", "bg-cyan-400/10", "bg-cyan-400", "08:00 PM - 04:00 AM")}
+            {nightTokens.map((num) => (
+              <TokenRow
+                key={`night-${num}`}
+                id={`night-${num}`}
+                label={`Night Token #${num}`}
+                shift="08:00 PM - 04:00 AM"
+                iconBg="bg-cyan-400/20"
+                iconColor="text-cyan-300"
+                rowBg="bg-cyan-400/10"
+              />
+            ))}
           </div>
         </Panel>
       </div>
