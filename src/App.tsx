@@ -1921,15 +1921,13 @@ export default function WorkerTokenPage() {
   }, []);
 
   const handleTokenClick = async (id: number) => {
-    // 1. Set as active right away
-    setActiveToken(id);
     setClaimedTokens((prev) => [...prev, id]);
-    
-    try {
-      localStorage.setItem("activeToken", id.toString());
-    } catch {
-      // Ignore
-    }
+    await fetch("/api/update-motor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ motor_time: 30, call: 1 }),
+    }).catch(() => undefined);
+  };
 
     // 2. Create the content with motor_time changed to 13
     const content = JSON.stringify({ motor_time: 13, call: 0 }, null, 2);
