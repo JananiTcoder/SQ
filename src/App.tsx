@@ -1912,27 +1912,26 @@ function WorkerTokenPage() {
     if (saved) setActiveToken(Number(saved));
   }, []);
 
-  const handleTokenClick = (id: number) => {
+  const handleTokenClick = async (id: number) => {
     setClaimedTokens((prev) => [...prev, id]);
-    setMotorTime(30);
-    fetch("/json.json", { method: "GET" })
-      .then(() => {
-        const blob = new Blob([JSON.stringify({ motor_time: 30 }, null, 2)], { type: "application/json" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "json.json";
-        a.click();
-        URL.revokeObjectURL(a.href);
-      })
-      .catch(() => undefined);
+    const content = JSON.stringify({ motor_time: 30 }, null, 2);
     try {
-      fetch("/api/update-motor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ motor_time: 30, call: 1 }),
-      }).catch(() => undefined);
+      // @ts-ignore
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+        startIn: "downloads",
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
     } catch {
-      // ignore
+      // user cancelled picker — fallback to download
+      const blob = new Blob([content], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "json.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
   };
 
