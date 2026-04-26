@@ -981,7 +981,7 @@ function QrComplaintIntake({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (pa
 
 function ComplaintsPage({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (payload: Omit<Complaint, "id" | "createdAt" | "status">) => Promise<void> }) {
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 px-4">
       <CommandHeader title="Public QR Complaint Intake" subtitle="Public users scan a restroom QR first, then SanitizeAI opens live-style readings, feedbacks, ratings, complaints, and AI risk prediction." isLive lastSync={new Date()} />
       <QrComplaintIntake toilets={toilets} onAdd={onAdd} />
     </div>
@@ -992,7 +992,7 @@ function StarRating({ label, value, onChange }: { label: string; value: number; 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <p className="mb-3 text-sm font-semibold text-slate-200">{label}</p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         {[1, 2, 3, 4, 5].map((score) => (
           <button key={score} type="button" onClick={() => onChange(score)} className={`rounded-xl border p-2 transition ${score <= value ? "border-amber-300/40 bg-amber-300/20 text-amber-100" : "border-white/10 bg-white/[0.04] text-slate-400"}`} aria-label={`${label} ${score} stars`}>
             <Star size={17} fill={score <= value ? "currentColor" : "none"} />
@@ -1091,7 +1091,7 @@ function StaffComplaintsPage({ complaints, onStatus }: { complaints: Complaint[]
         <MetricCard icon={TicketCheck} label="Resolved" value={resolvedTickets} suffix="" detail="Completed maintenance tickets" trend="Closed" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] items-start">
         <Panel title="Complaints raised by public users" action={`${filteredComplaints.length} visible`}>
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             <Select value={statusFilter} onChange={(value) => setStatusFilter(value as ComplaintStatus | "All")} options={["All", "Pending", "In Progress", "Resolved"]} />
@@ -1113,7 +1113,7 @@ function StaffComplaintsPage({ complaints, onStatus }: { complaints: Complaint[]
           </div>
         </Panel>
 
-        <div className="space-y-6">
+        <div className="grid gap-6 auto-rows-fr">
           <Panel title="Access scope" action={isAdmin ? "Admin" : "Worker"}>
             <div className="space-y-3 text-sm leading-6 text-slate-300">
               <p className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">{isAdmin ? "Admin can monitor complaints, update status, and view worker assignment details." : "Worker can monitor complaints and update status, but worker roster details are hidden."}</p>
@@ -1218,7 +1218,7 @@ function WorkerProfilePanel() {
 
 function SensorsPage({ toilets }: { toilets: Restroom[] }) {
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 auto-rows-fr">
       <CommandHeader title="Sensor Monitoring" subtitle="Live-style IoT telemetry for humidity, gas, odor, occupancy, and ammonia sensors." isLive lastSync={new Date()} />
       <div className="grid gap-4 md:grid-cols-3">
         {toilets.slice(0, 6).map((toilet) => (
@@ -1331,7 +1331,7 @@ function AnalyticsPage({ wardRisk, toilets, complaints }: { wardRisk: WardRisk[]
           </div>
         </Panel>
       </div>
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)] items-start">
         <Panel title="Critical alert zones" action="Maintenance priority">
           <div className="space-y-3">
             {wardRisk.map((ward) => (
