@@ -1904,23 +1904,26 @@ function markerIcon(cleanliness: Cleanliness) {
   });
 }
 function WorkerTokenPage() {
-  // Initialize state directly from localStorage to prevent flickering
-  const [activeToken, setActiveToken] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem("activeToken");
-      return saved ? Number(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [activeToken, setActiveToken] = useState<number | null>(null);
 
-  // Handle click and save to localStorage safely
-  const handleTokenClick = (id: number) => {
-    setActiveToken(id);
+  useEffect(() => {
+    const saved = localStorage.getItem("activeToken");
+    if (saved) setActiveToken(Number(saved));
+  }, []);
+
+  const handleTokenClick = async (id: number) => {
+    const isAlreadyActive = activeToken === id;
+    const next = isAlreadyActive ? null : id;
+    setActiveToken(next);
+    localStorage.setItem("activeToken", next !== null ? next.toString() : "");
     try {
-      localStorage.setItem("activeToken", id.toString());
-    } catch {
-      // Ignore if localStorage is blocked
+      await fetch("/api/update-motor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motor_time: 30, call: isAlreadyActive ? 0 : 1 }),
+      });
+    } catch (err) {
+      console.log("Motor API error:", err);
     }
   };
 
