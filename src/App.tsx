@@ -1905,25 +1905,34 @@ function markerIcon(cleanliness: Cleanliness) {
 }
 function WorkerTokenPage() {
   const [claimedTokens, setClaimedTokens] = useState<number[]>([]);
+  const [motorTime, setMotorTime] = useState(0);
 
   useEffect(() => {
     const saved = localStorage.getItem("activeToken");
     if (saved) setActiveToken(Number(saved));
   }, []);
 
-  const handleTokenClick = async (id: number) => {
-    const isAlreadyActive = activeToken === id;
-    const next = isAlreadyActive ? null : id;
-    setActiveToken(next);
-    localStorage.setItem("activeToken", next !== null ? next.toString() : "");
+  const handleTokenClick = (id: number) => {
+    setClaimedTokens((prev) => [...prev, id]);
+    setMotorTime(30);
+    fetch("/json.json", { method: "GET" })
+      .then(() => {
+        const blob = new Blob([JSON.stringify({ motor_time: 30 }, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "json.json";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(() => undefined);
     try {
-      await fetch("/api/update-motor", {
+      fetch("/api/update-motor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ motor_time: 30, call: isAlreadyActive ? 0 : 1 }),
-      });
-    } catch (err) {
-      console.log("Motor API error:", err);
+        body: JSON.stringify({ motor_time: 30, call: 1 }),
+      }).catch(() => undefined);
+    } catch {
+      // ignore
     }
   };
 
