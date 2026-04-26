@@ -1903,29 +1903,55 @@ function markerIcon(cleanliness: Cleanliness) {
     iconAnchor: [14, 14],
   });
 }
-function WorkerTokenPage() {
+import React, { useState, useEffect } from "react";
+import { TicketCheck } from "lucide-react";
+
+export default function WorkerTokenPage() {
+  const [activeToken, setActiveToken] = useState<number | null>(null);
   const [claimedTokens, setClaimedTokens] = useState<number[]>([]);
   const [motorTime, setMotorTime] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("activeToken");
-    if (saved) setActiveToken(Number(saved));
+    try {
+      const saved = localStorage.getItem("activeToken");
+      if (saved) setActiveToken(Number(saved));
+    } catch {
+      // Ignore localStorage errors
+    }
   }, []);
 
   const handleTokenClick = async (id: number) => {
+    // 1. Set as active right away
+    setActiveToken(id);
     setClaimedTokens((prev) => [...prev, id]);
-    const content = JSON.stringify({ motor_time: 30 }, null, 2);
+    
+    try {
+      localStorage.setItem("activeToken", id.toString());
+    } catch {
+      // Ignore
+    }
+
+    // 2. Create the content with motor_time changed to 13
+    const content = JSON.stringify({ motor_time: 13, call: 0 }, null, 2);
+    
+    // 3. File Picker Logic
     try {
       // @ts-ignore
-      const [fileHandle] = await window.showSaveFilePicker({
-        suggestedName: "json.json",
+      const [fileHandle] = await window.showOpenFilePicker({
         types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+        startIn: "downloads",
       });
       const writable = await fileHandle.createWritable();
       await writable.write(content);
       await writable.close();
     } catch {
-      // cancelled — silent
+      // user cancelled picker — fallback to download
+      const blob = new Blob([content], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "json.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
   };
 
@@ -1967,10 +1993,11 @@ function WorkerTokenPage() {
           <button
             type="button"
             onClick={() => handleTokenClick(1)}
+            disabled={activeToken === 1}
             className={`w-full shrink-0 rounded-xl px-6 py-2.5 font-semibold transition sm:w-auto ${
               activeToken === 1
-                ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
-                : "bg-white/10 text-slate-300 hover:bg-white/20"
+                ? "bg-amber-400 text-slate-950 cursor-not-allowed opacity-100"
+                : "bg-white/10 text-slate-300 hover:bg-white/20 active:scale-95"
             }`}
           >
             {activeToken === 1 ? "Active" : "Not Active"}
@@ -1996,10 +2023,11 @@ function WorkerTokenPage() {
           <button
             type="button"
             onClick={() => handleTokenClick(2)}
+            disabled={activeToken === 2}
             className={`w-full shrink-0 rounded-xl px-6 py-2.5 font-semibold transition sm:w-auto ${
               activeToken === 2
-                ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
-                : "bg-white/10 text-slate-300 hover:bg-white/20"
+                ? "bg-amber-400 text-slate-950 cursor-not-allowed opacity-100"
+                : "bg-white/10 text-slate-300 hover:bg-white/20 active:scale-95"
             }`}
           >
             {activeToken === 2 ? "Active" : "Not Active"}
@@ -2010,4 +2038,6 @@ function WorkerTokenPage() {
     </div>
   );
 }
+
+
 
