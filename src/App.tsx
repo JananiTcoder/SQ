@@ -863,122 +863,146 @@ function QrComplaintIntake({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (pa
     window.setTimeout(() => setSent(false), 2500);
   };
 
-  return (
-    <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <Panel title="Scan QR code" action="Required before complaint">
-        <div className="relative min-h-[340px] overflow-hidden rounded-[1.75rem] border border-cyan-300/20 bg-slate-950">
-          <div id={scannerElementId} className={`min-h-[340px] ${scannerActive ? "block" : "hidden"}`} />
-          {!scannerActive ? (
-            <div className="flex min-h-[340px] flex-col items-center justify-center p-8 text-center">
-              <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 2, repeat: Infinity }} className="flex h-24 w-24 items-center justify-center rounded-[2rem] border border-cyan-300/30 bg-cyan-300/10 text-cyan-200">
-                <Camera size={44} />
-              </motion.div>
-              <p className="mt-5 max-w-sm text-sm leading-6 text-slate-300">Open camera scanning or paste any QR value. Once a QR is scanned, SanitizeAI reveals readings, feedbacks, and the complaint box.</p>
-            </div>
-          ) : null}
-          {scannerActive ? <motion.div animate={{ y: [0, 270, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }} className="absolute left-6 right-6 top-8 h-1 rounded-full bg-cyan-300 shadow-[0_0_28px_rgba(103,232,249,0.95)]" /> : null}
+  /* =========================================================
+FIXES YOU ASKED:
+1. Make page balanced on both sides (not everything left)
+2. Staff complaint page: remove Auto Clean Toilet toggle
+3. Admin Controls visible ONLY after QR scan
+4. Complaint box visible after QR scan (same logic)
+5. Keep AI Risk Prediction in LEFT side, others in RIGHT side
+========================================================= */
+
+
+/* =========================================================
+IN YOUR QrComplaintIntake() JSX
+FIND main layout wrapper and REPLACE with this
+========================================================= */
+
+return (
+  <div className="space-y-6">
+
+    {/* QR Scan Section Full Width */}
+    <Panel
+      title="Scan QR code"
+      action="Required before complaint"
+    >
+      {/* your scanner code stays same */}
+    </Panel>
+
+    {/* AFTER QR SCANNED ONLY */}
+    {verifiedToilet ? (
+      <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)] items-start">
+
+        {/* LEFT SIDE ONLY AI RISK */}
+        <div className="space-y-6">
+          <RiskPredictionPanel prediction={prediction} />
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <button type="button" onClick={() => void startScanner()} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300">
-            <Camera size={18} /> Start camera scan
-          </button>
-          <button type="button" onClick={() => void stopScanner()} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-bold text-white transition hover:bg-white/10">
-            Stop scanner
-          </button>
-        </div>
+        {/* RIGHT SIDE ALL OTHER CONTENT */}
+        <div className="space-y-6">
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-          <input value={manualCode} onChange={(event) => setManualCode(event.target.value)} placeholder="Paste any QR code payload" className={inputClassName} />
-          <button type="button" onClick={() => openComplaintBox(manualCode)} className="rounded-2xl border border-cyan-300/25 px-5 py-3 font-bold text-cyan-100 transition hover:bg-cyan-300/10">Use QR</button>
-        </div>
-        <p className="mt-3 rounded-2xl bg-white/5 p-3 text-sm text-slate-300">{scanMessage}</p>
-      </Panel>
+          {/* ADMIN CONTROLS AFTER SCAN */}
+          <Panel title="Admin Controls" action="Admin only">
+            <div className="grid gap-4 sm:grid-cols-2">
 
-      {getStaffSession()?.role === "admin" && (
-        <Panel title="Admin Controls" action="Admin only">
-          <AdminControlsPanel />
-        </Panel>
-      )}
+              <button
+                onClick={callWorker}
+                className="rounded-2xl bg-cyan-400 px-4 py-3 font-bold text-black"
+              >
+                Call Worker
+              </button>
 
-      <div ref={complaintBoxRef} className="space-y-5">
-        <div className="light-glass rounded-[2rem] p-5 text-slate-950">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.26em] text-teal-700">Static public sensor data</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight">{scanComplete ? "Complaint box ready" : "Scan QR to continue"}</h2>
-              <p className="mt-2 text-sm text-slate-600">{scanComplete ? `Scanned QR: ${scannedCode}` : "The complaint form unlocks after any QR scan."}</p>
-            </div>
-            <Badge className={scanComplete ? "border-emerald-300/30 bg-emerald-400/20 text-emerald-900" : "border-amber-300/50 bg-amber-300/20 text-amber-900"}>{scanComplete ? "Scanned" : "Waiting"}</Badge>
-          </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <p className="text-sm text-slate-400">
+                  Worker Contact
+                </p>
+                <p className="mt-2 font-bold text-white">
+                  +91 84287 67747
+                </p>
+              </div>
 
-          {scanComplete ? (
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <PublicSensorTile icon={Droplets} label="Humidity" value={`${staticSensorData.humidity}%`} helper="Static public reading" />
-              <PublicSensorTile icon={Activity} label="Gas sensor" value={`${staticSensorData.gas} ppm`} helper="Static gas sensor value" />
-              <PublicSensorTile icon={ShieldCheck} label="Hygiene score" value={`${staticSensorData.hygieneScore}%`} helper="Static public score" />
-              <PublicSensorTile icon={Sparkles} label="Hygiene level" value={staticSensorData.hygieneLevel} helper="Safe for public use" />
-            </div>
-          ) : (
-            <div className="mt-6 rounded-[1.5rem] border border-dashed border-teal-300/50 bg-teal-50/70 p-5 text-sm font-semibold text-teal-900">
-              Sensor data is hidden until a QR scan is completed.
-            </div>
-          )}
-        </div>
-
-        {scanComplete ? (
-          <Panel title="Public feedbacks" action={`${feedbacks.length} recent`}>
-            <div className="space-y-3">
-              {feedbacks.map((feedback) => (
-                <div key={feedback.name} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-bold text-white">{feedback.name}</p>
-                    <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-200"><Star size={15} fill="currentColor" /> {feedback.rating}/5</span>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{feedback.text}</p>
-                </div>
-              ))}
             </div>
           </Panel>
-        ) : null}
 
-        <Panel title="Complaint box" action={scanComplete ? "QR verified" : "Locked"}>
-          {!scanComplete ? (
-            <div className="rounded-2xl border border-dashed border-cyan-300/25 bg-cyan-300/5 p-6 text-center text-sm leading-6 text-cyan-100">
-              Scan or paste any QR code first. The complaint fields will appear here immediately after scanning.
+          {/* PUBLIC SENSOR DATA */}
+          <Panel title="Static public sensor data">
+            <div className="grid gap-4 md:grid-cols-2">
+              <PublicSensorTile
+                icon={Droplets}
+                label="Humidity"
+                value="67%"
+                helper="Static public reading"
+              />
+
+              <PublicSensorTile
+                icon={Activity}
+                label="Gas sensor"
+                value="23 ppm"
+                helper="Static gas sensor value"
+              />
+
+              <PublicSensorTile
+                icon={ShieldCheck}
+                label="Hygiene score"
+                value="84%"
+                helper="Static public score"
+              />
+
+              <PublicSensorTile
+                icon={BadgeCheck}
+                label="Hygiene level"
+                value="Good"
+                helper="Safe for public use"
+              />
             </div>
-          ) : (
-            <form onSubmit={submitPublicComplaint} className="space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
-                Complaint will be linked to {selectedToilet?.name ?? "the nearest public restroom"}. Matched restroom IDs are detected automatically when the QR includes values like T-101.
-              </div>
-              <Select value={category} onChange={setCategory} options={["Bad Odor", "Dirty Floor", "Water Leakage", "No Water Supply", "Low Supplies", "Broken Equipment", "Overflow Issue", "Hygiene Concern"]} />
-              <textarea value={issue} onChange={(event) => setIssue(event.target.value)} rows={5} placeholder="Describe the issue" className={`${inputClassName} resize-none`} />
-              <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed border-cyan-300/30 bg-cyan-300/5 px-4 py-4 text-sm text-cyan-100">
-                <span>{imageName || "Upload optional image"}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={(event) => setImageName(event.target.files?.[0]?.name ?? "")} />
-                <Camera size={18} />
-              </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <StarRating label="Cleanliness" value={ratings.cleanliness} onChange={(value) => setRatings((current) => ({ ...current, cleanliness: value }))} />
-                <StarRating label="Smell" value={ratings.smell} onChange={(value) => setRatings((current) => ({ ...current, smell: value }))} />
-                <StarRating label="Water Availability" value={ratings.water} onChange={(value) => setRatings((current) => ({ ...current, water: value }))} />
-                <StarRating label="Overall Experience" value={ratings.overall} onChange={(value) => setRatings((current) => ({ ...current, overall: value }))} />
-              </div>
-              <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300">
-                <Send size={18} /> Submit complaint
-              </button>
-              {sent ? <p className="rounded-2xl bg-emerald-400/10 p-3 text-sm text-emerald-200">Complaint submitted with QR and static sensor data.</p> : null}
-            </form>
-          )}
-        </Panel>
+          </Panel>
 
-        {scanComplete && riskPrediction ? <RiskPredictionPanel prediction={riskPrediction} /> : null}
+          {/* FEEDBACKS */}
+          <Panel title="Public feedbacks" action="3 recent">
+            {/* your feedback cards */}
+          </Panel>
+
+          {/* COMPLAINT BOX AFTER QR */}
+          <Panel title="Complaint box" action="QR verified">
+            {/* your complaint form existing code */}
+          </Panel>
+
+        </div>
       </div>
-    </div>
-  );
-}
+    ) : null}
+  </div>
+);
 
+
+
+/* =========================================================
+REMOVE THIS BLOCK COMPLETELY
+========================================================= */
+
+<Switch />
+Auto Clean Toilet
+
+
+
+/***********************************************************
+RESULT:
+------------------------------------------------------------
+Before QR Scan:
+Only scanner visible
+
+After QR Scan:
+LEFT:
+AI Risk Prediction
+
+RIGHT:
+Admin Controls
+Sensor Data
+Feedbacks
+Complaint Box
+
+Balanced layout both sides
+No Auto Clean Toilet button
+***********************************************************/
 function ComplaintsPage({ toilets, onAdd }: { toilets: Restroom[]; onAdd: (payload: Omit<Complaint, "id" | "createdAt" | "status">) => Promise<void> }) {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4">
